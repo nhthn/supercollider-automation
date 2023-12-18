@@ -1,5 +1,4 @@
 // PluginAutomation.cpp
-// Nathan Ho (nathan.waikin.ho@gmail.com)
 
 #include "SC_PlugIn.hpp"
 #include "Automation.hpp"

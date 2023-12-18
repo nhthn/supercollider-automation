@@ -1,5 +1,4 @@
 // PluginAutomation.hpp
-// Nathan Ho (nathan.waikin.ho@gmail.com)
 
 #pragma once
 

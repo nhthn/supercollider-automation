@@ -1,7 +1,5 @@
 # Automation
 
-Author: Nathan Ho
-
 A simple audio volume gain plugin
 
 ### Requirements
@@ -13,7 +11,7 @@ A simple audio volume gain plugin
 
 Clone the project:
 
-    git clone https://github.com/nhthn/automation
+    git clone https://github.com/nhthn/supercollider-automation
     cd automation
     mkdir build
     cd build
