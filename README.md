@@ -1,10 +1,8 @@
 # Automation
 
-A simple audio volume gain plugin
-
 ### Requirements
 
-- CMake >= 3.5
+- CMake >= 3.12
 - SuperCollider source code
 
 ### Building
