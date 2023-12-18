@@ -14,5 +14,5 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Catch2)
 
-add_executable(automation_test test.cpp)
+add_executable(automation_test test.cpp automation_core.cpp automation_core.hpp)
 target_link_libraries(automation_test PRIVATE Catch2::Catch2WithMain)
