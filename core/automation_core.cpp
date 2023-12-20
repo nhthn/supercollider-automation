@@ -2,7 +2,7 @@
 
 #include "automation_core.hpp"
 
-double calcAutomation(const Automation* automation, double time)
+double evaluate(const Automation* automation, double time)
 {
     const int numValues = automation->numValues;
     const int numDurations = numValues - 1;
@@ -12,7 +12,7 @@ double calcAutomation(const Automation* automation, double time)
 
     double cumulativeTime = 0.0;
     for (int i = 0; i < numDurations; i++) {
-        const auto duration = std::max(automation->durations[i], 0.0);
+        const auto duration = automation->durations[i];
         const auto newCumulativeTime = cumulativeTime + duration;
         if (newCumulativeTime >= time) {
             auto x1 = automation->values[i];
