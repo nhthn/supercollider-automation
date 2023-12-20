@@ -1,37 +1,24 @@
 #include "automation_core.hpp"
 
-Automation::Automation(int numBreakpoints)
-: mNumBreakpoints(numBreakpoints)
+double calcAutomation(Automation* automation, double time)
 {
-    for (int i = 0; i < mNumBreakpoints - 1; i++) {
-        mDurations.push_back(0.0);
+    const int numValues = automation->numValues;
+    const int numDurations = numValues - 1;
+    if (time <= 0.0) {
+        return automation->values[0];
     }
-    for (int i = 0; i < mNumBreakpoints; i++) {
-        mValues.push_back(0.0);
-    }
-}
 
-void Automation::setBreakpointDuration(int index, double duration)
-{
-    if ((0 <= index) && (index <= mNumBreakpoints - 1)) {
-        mDurations[index] = duration;
+    double cumulativeTime = 0.0;
+    for (int i = 0; i < numDurations; i++) {
+        const auto duration = automation->durations[i];
+        const auto newCumulativeTime = cumulativeTime + duration;
+        if (newCumulativeTime >= time) {
+            auto x1 = automation->values[i];
+            auto x2 = automation->values[i + 1];
+            return x1 + (x2 - x1) * (time - cumulativeTime) / duration;
+        }
+        cumulativeTime = newCumulativeTime;
     }
-}
 
-void Automation::setBreakpointValue(int index, double value)
-{
-    if ((0 <= index) && (index <= mNumBreakpoints)) {
-        mValues[index] = value;
-    }
-}
-
-double Automation::valueAt(double time)
-{
-    if (time < 0.0) {
-        return mValues[0];
-    }
-    if (time >= mDurations[0]) {
-        return mValues[1];
-    }
-    return mValues[0] + (mValues[1] - mValues[0]) * time / mDurations[0];
+    return automation->values[numValues - 1];
 }
