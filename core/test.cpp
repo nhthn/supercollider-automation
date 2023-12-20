@@ -41,3 +41,18 @@ TEST_CASE("multiple segments")
     REQUIRE_THAT(calcAutomation(&automation, 3.0), Catch::Matchers::WithinRel(-3.0, kEpsilon));
     REQUIRE_THAT(calcAutomation(&automation, 4.0), Catch::Matchers::WithinRel(-3.0, kEpsilon));
 }
+
+TEST_CASE("normalization")
+{
+    int numValues = 3;
+    double values[] = {1.0, 2.0, 1.0};
+    double durations[] = {2.0, 3.0};
+    Automation automation = {
+        .numValues = numValues,
+        .values = values,
+        .durations = durations
+    };
+    normalizeDurations(&automation);
+    REQUIRE_THAT(automation.durations[0], Catch::Matchers::WithinRel(2.0 / 5.0, kEpsilon));
+    REQUIRE_THAT(automation.durations[1], Catch::Matchers::WithinRel(3.0 / 5.0, kEpsilon));
+}

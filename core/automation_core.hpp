@@ -4,4 +4,5 @@ struct Automation {
     double* durations;
 };
 
-double calcAutomation(Automation* automation, double time);
+double calcAutomation(const Automation* automation, double time);
+void normalizeDurations(Automation* automation);
