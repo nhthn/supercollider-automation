@@ -1,23 +1,17 @@
-// PluginAutomation.hpp
-
 #pragma once
 
 #include "SC_PlugIn.hpp"
+#include "automation_core.hpp"
 
-namespace Automation {
+using AutomationCore = automation::Automation;
 
 class Automation : public SCUnit {
 public:
     Automation();
-
-    // Destructor
-    // ~Automation();
+    ~Automation();
 
 private:
-    // Calc function
     void next(int nSamples);
 
-    // Member variables
+    AutomationCore* mCore = nullptr;
 };
-
-} // namespace Automation

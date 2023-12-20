@@ -58,9 +58,13 @@ endif()
 ####################################################################################################
 # Begin target Automation
 
+include_directories(core)
+
 set(Automation_cpp_files
     plugins/Automation/Automation.cpp
     plugins/Automation/Automation.hpp
+    core/automation_core.hpp
+    core/automation_core.cpp
 )
 set(Automation_sc_files
     plugins/Automation/Automation.sc

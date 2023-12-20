@@ -2,6 +2,8 @@
 
 #include "automation_core.hpp"
 
+namespace automation {
+
 double evaluate(const Automation* automation, double time)
 {
     const int numValues = automation->numValues;
@@ -37,4 +39,6 @@ void normalizeDurations(Automation* automation)
     for (int i = 0; i < numDurations; i++) {
         automation->durations[i] *= multiplier;
     }
+}
+
 }
