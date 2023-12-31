@@ -22,7 +22,7 @@ Automation::Automation() {
     if (
         coreMemory == nullptr
         || valuesMemory == nullptr
-        || durationsmemory == nullptr
+        || durationsMemory == nullptr
         || easingFunctionMemory == nullptr
     ) {
         mOK = false;
@@ -36,7 +36,7 @@ Automation::Automation() {
     mCore->numValues = numValues;
     mCore->values = static_cast<double*>(valuesMemory);
     mCore->durations = static_cast<double*>(durationsMemory);
-    mCore->easingFunction = static_cast<automation::EasingFunction*>(easingFunctionMemory);
+    mCore->easingFunctions = static_cast<automation::EasingFunction*>(easingFunctionMemory);
 
     mCalcFunc = make_calc_function<Automation, &Automation::next>();
     next(1);
@@ -65,8 +65,16 @@ void Automation::next(int nSamples) {
     int numValues = mCore->numValues;
     int numSegments = mCore->numValues - 1;
 
-    // The initial 2: 1 for the time parameter, one for the number of values.
-    int expectedNumInputs = 2 + numValues + numSegments;
+    // 2: 1 for the time parameter, one for the number of values.
+    // numValues: values.
+    // numSegments: durations.
+    // numSegments: easing functions.
+    int expectedNumInputs = 2 + numValues + numSegments + numSegments;
+
+    if (mNumInputs != expectedNumInputs) {
+        clear(nSamples);
+        return;
+    }
 
     for (int i = 0; i < nSamples; i++) {
         int inputIndex = 2;

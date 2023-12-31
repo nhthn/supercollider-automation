@@ -6,10 +6,10 @@ enum class EasingFunction {
     Linear,
     FirstValue,
     NextValue,
-    SineIn,
-    SineOut,
     QuadraticIn,
     QuadraticOut,
+    SineIn,
+    SineOut,
 };
 
 struct Automation {
@@ -21,5 +21,6 @@ struct Automation {
 
 double evaluate(const Automation* automation, double time);
 void normalizeDurations(Automation* automation);
+EasingFunction easingFunctionFromInt(int index);
 
 }
