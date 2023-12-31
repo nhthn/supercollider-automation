@@ -21,16 +21,18 @@ Automation : UGen {
 	}
 
 	*wrapEasingFunction { |thing|
+		var result;
+		result = thing;
 		if(thing.isKindOf(Symbol)) {
-			^[
+			result = [
 				\linear,
 				\firstValue,
 				\nextValue,
 				\quadraticIn,
 				\quadraticOut,
-			].indexOf(thing);
+			].indexOf(result);
 		}
-		^this.ensureAudioRate(thing);
+		^this.ensureAudioRate(result);
 	}
 
 	*ensureAudioRate { |thing|
