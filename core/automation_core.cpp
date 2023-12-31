@@ -4,6 +4,41 @@
 
 namespace automation {
 
+EasingFunction easingFunctionFromInt(int index) {
+    switch (index) {
+    case 0: return EasingFunction::Linear;
+    case 1: return EasingFunction::FirstValue;
+    case 2: return EasingFunction::NextValue;
+    case 3: return EasingFunction::QuadraticIn;
+    case 4: return EasingFunction::QuadraticOut;
+    default: return EasingFunction::Linear;
+    }
+}
+
+double computeEasingCore(double t, EasingFunction easingFunction) {
+    if (easingFunction == EasingFunction::Linear) {
+        return t;
+    }
+    if (easingFunction == EasingFunction::FirstValue) {
+        return 0.0;
+    }
+    if (easingFunction == EasingFunction::NextValue) {
+        return 1.0;
+    }
+    if (easingFunction == EasingFunction::QuadraticIn) {
+        return t * t;
+    }
+    if (easingFunction == EasingFunction::QuadraticOut) {
+        return 1 - computeEasingCore(1 - t, EasingFunction::QuadraticIn);
+    }
+    return t;
+}
+
+double computeEasing(double x1, double x2, double t, EasingFunction easingFunction) {
+    auto tWarped = computeEasingCore(t, easingFunction);
+    return x1 + (x2 - x1) * tWarped;
+}
+
 double evaluate(const Automation* automation, double time)
 {
     const int numValues = automation->numValues;
@@ -19,7 +54,9 @@ double evaluate(const Automation* automation, double time)
         if (newCumulativeTime >= time) {
             auto x1 = automation->values[i];
             auto x2 = automation->values[i + 1];
-            return x1 + (x2 - x1) * (time - cumulativeTime) / duration;
+            auto easingFunction = automation->easingFunctions[i];
+            auto t = (time - cumulativeTime) / duration;
+            return computeEasing(x1, x2, t, easingFunction);
         }
         cumulativeTime = newCumulativeTime;
     }

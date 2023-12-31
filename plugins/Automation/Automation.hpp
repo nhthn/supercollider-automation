@@ -12,6 +12,8 @@ public:
 
 private:
     void next(int nSamples);
+    void clear(int nSamples);
 
+    bool mOK = false;
     AutomationCore* mCore = nullptr;
 };
