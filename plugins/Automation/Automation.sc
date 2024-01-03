@@ -1,4 +1,19 @@
 Automation : UGen {
+	classvar <>easingFunctions = #[
+		\linear,
+		\firstValue,
+		\nextValue,
+		\quadraticIn,
+		\quadraticOut,
+		\quadraticInOut,
+		\cubicIn,
+		\cubicOut,
+		\cubicInOut,
+		\sineIn,
+		\sineOut,
+		\sineInOut,
+	];
+
 	*ar { |time, values, durations, easingFunctions|
 		var args;
 		if(values.size < 2) {
@@ -24,13 +39,7 @@ Automation : UGen {
 		var result;
 		result = thing;
 		if(thing.isKindOf(Symbol)) {
-			result = [
-				\linear,
-				\firstValue,
-				\nextValue,
-				\quadraticIn,
-				\quadraticOut,
-			].indexOf(result);
+			result = this.easingFunctions.indexOf(result);
 		}
 		^this.ensureAudioRate(result);
 	}
