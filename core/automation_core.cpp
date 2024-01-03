@@ -43,10 +43,10 @@ double computeEasingCore(double t, EasingFunction easingFunction) {
     }
     if (easingFunction == EasingFunction::QuadraticInOut) {
         if (t < 0.5) {
-            return computeEasingCore(2 * t, EasingFunction::QuadraticOut) / 2;
+            return computeEasingCore(2 * t, EasingFunction::QuadraticIn) / 2;
         }
         if (t >= 0.5) {
-            return 1 - computeEasingCore(2 * (1 - t), EasingFunction::QuadraticOut) / 2;
+            return 1 - computeEasingCore(2 * (1 - t), EasingFunction::QuadraticIn) / 2;
         }
     }
 
