@@ -9,12 +9,18 @@ enum class EasingFunction {
     QuadraticIn,
     QuadraticOut,
     QuadraticInOut,
-    CubicIn,
-    CubicOut,
-    CubicInOut,
     SineIn,
     SineOut,
     SineInOut,
+    CubicIn,
+    CubicOut,
+    CubicInOut,
+    QuarticIn,
+    QuarticOut,
+    QuarticInOut,
+    QuinticIn,
+    QuinticOut,
+    QuinticInOut,
 };
 
 struct Automation {

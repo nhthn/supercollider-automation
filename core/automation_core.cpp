@@ -1,6 +1,7 @@
 #include <cmath>
 #include <numbers>
 #include <algorithm>
+#include <functional>
 
 #include "automation_core.hpp"
 
@@ -20,8 +21,45 @@ EasingFunction easingFunctionFromInt(int index) {
     case 9: return EasingFunction::SineIn;
     case 10: return EasingFunction::SineOut;
     case 11: return EasingFunction::SineInOut;
+    case 12: return EasingFunction::QuarticIn;
+    case 13: return EasingFunction::QuarticOut;
+    case 14: return EasingFunction::QuarticInOut;
+    case 15: return EasingFunction::QuinticIn;
+    case 16: return EasingFunction::QuinticOut;
+    case 17: return EasingFunction::QuinticInOut;
     default: return EasingFunction::Linear;
     }
+}
+
+double coreSine(double t) {
+    return 1 - std::cos(t * std::numbers::pi / 2);
+}
+
+double coreQuadratic(double t) {
+    return t * t;
+}
+
+double coreCubic(double t) {
+    return t * t * t;
+}
+
+double coreQuartic(double t) {
+    return t * t * t * t;
+}
+
+double coreQuintic(double t) {
+    return t * t * t * t * t;
+}
+
+double easeOut(double t, std::function<double(double)> core) {
+    return 1 - core(1 - t);
+}
+
+double easeInOut(double t, std::function<double(double)> core) {
+    if (t < 0.5) {
+        return core(2 * t) / 2;
+    }
+    return 1 - core(2 * (1 - t)) / 2;
 }
 
 double computeEasingCore(double t, EasingFunction easingFunction) {
@@ -35,50 +73,25 @@ double computeEasingCore(double t, EasingFunction easingFunction) {
         return 1.0;
     }
 
-    if (easingFunction == EasingFunction::QuadraticIn) {
-        return t * t;
-    }
-    if (easingFunction == EasingFunction::QuadraticOut) {
-        return 1 - computeEasingCore(1 - t, EasingFunction::QuadraticIn);
-    }
-    if (easingFunction == EasingFunction::QuadraticInOut) {
-        if (t < 0.5) {
-            return computeEasingCore(2 * t, EasingFunction::QuadraticIn) / 2;
-        }
-        if (t >= 0.5) {
-            return 1 - computeEasingCore(2 * (1 - t), EasingFunction::QuadraticIn) / 2;
-        }
-    }
+    if (easingFunction == EasingFunction::QuadraticIn) { return coreQuadratic(t); }
+    if (easingFunction == EasingFunction::QuadraticOut) { return easeOut(t, coreQuadratic); }
+    if (easingFunction == EasingFunction::QuadraticInOut) { return easeInOut(t, coreQuadratic); }
 
-    if (easingFunction == EasingFunction::CubicIn) {
-        return t * t * t;
-    }
-    if (easingFunction == EasingFunction::CubicOut) {
-        return 1 - computeEasingCore(1 - t, EasingFunction::CubicIn);
-    }
-    if (easingFunction == EasingFunction::CubicInOut) {
-        if (t < 0.5) {
-            return computeEasingCore(2 * t, EasingFunction::CubicIn) / 2;
-        }
-        if (t >= 0.5) {
-            return 1 - computeEasingCore(2 * (1 - t), EasingFunction::CubicIn) / 2;
-        }
-    }
+    if (easingFunction == EasingFunction::SineIn) { return coreSine(t); }
+    if (easingFunction == EasingFunction::SineOut) { return easeOut(t, coreSine); }
+    if (easingFunction == EasingFunction::SineInOut) { return easeInOut(t, coreSine); }
 
-    if (easingFunction == EasingFunction::SineIn) {
-        return 1 - std::cos(t * std::numbers::pi / 2);
-    }
-    if (easingFunction == EasingFunction::SineOut) {
-        return 1 - computeEasingCore(1 - t, EasingFunction::SineIn);
-    }
-    if (easingFunction == EasingFunction::SineInOut) {
-        if (t < 0.5) {
-            return computeEasingCore(2 * t, EasingFunction::SineIn) / 2;
-        }
-        if (t >= 0.5) {
-            return 1 - computeEasingCore(2 * (1 - t), EasingFunction::SineIn) / 2;
-        }
-    }
+    if (easingFunction == EasingFunction::CubicIn) { return coreCubic(t); }
+    if (easingFunction == EasingFunction::CubicOut) { return easeOut(t, coreCubic); }
+    if (easingFunction == EasingFunction::CubicInOut) { return easeInOut(t, coreCubic); }
+
+    if (easingFunction == EasingFunction::QuarticIn) { return coreQuartic(t); }
+    if (easingFunction == EasingFunction::QuarticOut) { return easeOut(t, coreQuartic); }
+    if (easingFunction == EasingFunction::QuarticInOut) { return easeInOut(t, coreQuartic); }
+
+    if (easingFunction == EasingFunction::QuinticIn) { return coreQuintic(t); }
+    if (easingFunction == EasingFunction::QuinticOut) { return easeOut(t, coreQuintic); }
+    if (easingFunction == EasingFunction::QuinticInOut) { return easeInOut(t, coreQuintic); }
 
     return t;
 }

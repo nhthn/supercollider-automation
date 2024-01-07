@@ -12,6 +12,12 @@ Automation : UGen {
 		\sineIn,
 		\sineOut,
 		\sineInOut,
+		\quarticIn,
+		\quarticOut,
+		\quarticInOut,
+		\quinticIn,
+		\quinticOut,
+		\quinticInOut,
 	];
 
 	*ar { |time, values, durations, easingFunctions|
