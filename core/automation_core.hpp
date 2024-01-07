@@ -24,6 +24,9 @@ enum class EasingFunction {
     PseudoExponentialIn,
     PseudoExponentialOut,
     PseudoExponentialInOut,
+    CircularIn,
+    CircularOut,
+    CircularInOut,
 };
 
 struct Automation {

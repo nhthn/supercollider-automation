@@ -30,6 +30,9 @@ EasingFunction easingFunctionFromInt(int index) {
     case 18: return EasingFunction::PseudoExponentialIn;
     case 19: return EasingFunction::PseudoExponentialOut;
     case 20: return EasingFunction::PseudoExponentialInOut;
+    case 21: return EasingFunction::CircularIn;
+    case 22: return EasingFunction::CircularOut;
+    case 23: return EasingFunction::CircularInOut;
     default: return EasingFunction::Linear;
     }
 }
@@ -58,6 +61,11 @@ double corePseudoExponential(double t) {
     auto coefficient = 10.0;
     return (std::pow(2.0, coefficient * t) - 1.0) / (std::pow(2.0, coefficient) - 1.0);
 }
+
+double coreCircular(double t) {
+    return 1 - std::sqrt(1 - t * t);
+}
+
 
 double easeOut(double t, std::function<double(double)> core) {
     return 1 - core(1 - t);
@@ -104,6 +112,10 @@ double computeEasingCore(double t, EasingFunction easingFunction) {
     if (easingFunction == EasingFunction::PseudoExponentialIn) { return corePseudoExponential(t); }
     if (easingFunction == EasingFunction::PseudoExponentialOut) { return easeOut(t, corePseudoExponential); }
     if (easingFunction == EasingFunction::PseudoExponentialInOut) { return easeInOut(t, corePseudoExponential); }
+
+    if (easingFunction == EasingFunction::CircularIn) { return coreCircular(t); }
+    if (easingFunction == EasingFunction::CircularOut) { return easeOut(t, coreCircular); }
+    if (easingFunction == EasingFunction::CircularInOut) { return easeInOut(t, coreCircular); }
 
     return t;
 }

@@ -21,6 +21,9 @@ Automation : UGen {
 		\pseudoExponentialIn,
 		\pseudoExponentialOut,
 		\pseudoExponentialInOut,
+		\circularIn,
+		\circularOut,
+		\circularInOut,
 	];
 
 	*ar { |time, values, durations, easingFunctions|
