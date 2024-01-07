@@ -18,6 +18,9 @@ Automation : UGen {
 		\quinticIn,
 		\quinticOut,
 		\quinticInOut,
+		\pseudoExponentialIn,
+		\pseudoExponentialOut,
+		\pseudoExponentialInOut,
 	];
 
 	*ar { |time, values, durations, easingFunctions|

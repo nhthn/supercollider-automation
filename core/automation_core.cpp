@@ -27,6 +27,9 @@ EasingFunction easingFunctionFromInt(int index) {
     case 15: return EasingFunction::QuinticIn;
     case 16: return EasingFunction::QuinticOut;
     case 17: return EasingFunction::QuinticInOut;
+    case 18: return EasingFunction::PseudoExponentialIn;
+    case 19: return EasingFunction::PseudoExponentialOut;
+    case 20: return EasingFunction::PseudoExponentialInOut;
     default: return EasingFunction::Linear;
     }
 }
@@ -49,6 +52,11 @@ double coreQuartic(double t) {
 
 double coreQuintic(double t) {
     return t * t * t * t * t;
+}
+
+double corePseudoExponential(double t) {
+    auto coefficient = 10.0;
+    return (std::pow(2.0, coefficient * t) - 1.0) / (std::pow(2.0, coefficient) - 1.0);
 }
 
 double easeOut(double t, std::function<double(double)> core) {
@@ -92,6 +100,10 @@ double computeEasingCore(double t, EasingFunction easingFunction) {
     if (easingFunction == EasingFunction::QuinticIn) { return coreQuintic(t); }
     if (easingFunction == EasingFunction::QuinticOut) { return easeOut(t, coreQuintic); }
     if (easingFunction == EasingFunction::QuinticInOut) { return easeInOut(t, coreQuintic); }
+
+    if (easingFunction == EasingFunction::PseudoExponentialIn) { return corePseudoExponential(t); }
+    if (easingFunction == EasingFunction::PseudoExponentialOut) { return easeOut(t, corePseudoExponential); }
+    if (easingFunction == EasingFunction::PseudoExponentialInOut) { return easeInOut(t, corePseudoExponential); }
 
     return t;
 }

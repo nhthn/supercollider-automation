@@ -21,6 +21,9 @@ enum class EasingFunction {
     QuinticIn,
     QuinticOut,
     QuinticInOut,
+    PseudoExponentialIn,
+    PseudoExponentialOut,
+    PseudoExponentialInOut,
 };
 
 struct Automation {
