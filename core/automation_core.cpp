@@ -124,6 +124,19 @@ struct CoreSinc {
     }
 };
 
+struct CoreStaircase {
+    int mNumSteps = 1;
+
+    CoreStaircase(int numSteps)
+    : mNumSteps(numSteps) {
+        // Empty.
+    }
+
+    double operator()(double t) {
+        return std::floor(t * mNumSteps) / mNumSteps;
+    }
+};
+
 double easeOut(double t, std::function<double(double)> core) {
     return 1 - core(1 - t);
 }
@@ -159,11 +172,14 @@ double computeEasingCore(double t, EasingFunction easingFunction) {
     } else if (easingType == EasingType::Circular) {
         core = coreCircular;
     } else if (easingType == EasingType::Elastic) {
-        CoreElastic elastic(easingFunction.mParameter);
-        core = elastic;
+        CoreElastic function(easingFunction.mParameter);
+        core = function;
     } else if (easingType == EasingType::Sinc) {
-        CoreSinc sinc(easingFunction.mParameter);
-        core = sinc;
+        CoreSinc function(easingFunction.mParameter);
+        core = function;
+    } else if (easingType == EasingType::Staircase) {
+        CoreStaircase function(easingFunction.mParameter);
+        core = function;
     }
 
     if (direction == EasingDirection::In) {

@@ -21,6 +21,7 @@ Automation : UGen {
 		[
 			[\elastic, (1..8)],
 			[\sinc, (1..8)],
+			[\staircase, (2..8)],
 		].do { |spec|
 			var prefix, parameters;
 			# prefix, parameters = spec;
