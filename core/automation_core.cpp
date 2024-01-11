@@ -7,34 +7,52 @@
 
 namespace automation {
 
+EasingFunction::EasingFunction(EasingType type, EasingDirection direction, int parameter)
+    : mType(type), mDirection(direction), mParameter(parameter)
+{
+}
+
 EasingFunction easingFunctionFromInt(int index) {
-    switch (index) {
-    case 0: return EasingFunction::Linear;
-    case 1: return EasingFunction::FirstValue;
-    case 2: return EasingFunction::NextValue;
-    case 3: return EasingFunction::QuadraticIn;
-    case 4: return EasingFunction::QuadraticOut;
-    case 5: return EasingFunction::QuadraticInOut;
-    case 6: return EasingFunction::CubicIn;
-    case 7: return EasingFunction::CubicOut;
-    case 8: return EasingFunction::CubicInOut;
-    case 9: return EasingFunction::SineIn;
-    case 10: return EasingFunction::SineOut;
-    case 11: return EasingFunction::SineInOut;
-    case 12: return EasingFunction::QuarticIn;
-    case 13: return EasingFunction::QuarticOut;
-    case 14: return EasingFunction::QuarticInOut;
-    case 15: return EasingFunction::QuinticIn;
-    case 16: return EasingFunction::QuinticOut;
-    case 17: return EasingFunction::QuinticInOut;
-    case 18: return EasingFunction::PseudoExponentialIn;
-    case 19: return EasingFunction::PseudoExponentialOut;
-    case 20: return EasingFunction::PseudoExponentialInOut;
-    case 21: return EasingFunction::CircularIn;
-    case 22: return EasingFunction::CircularOut;
-    case 23: return EasingFunction::CircularInOut;
-    default: return EasingFunction::Linear;
+    if (index == 0) {
+        EasingFunction result(EasingType::Linear, EasingDirection::In, 0);
+        return result;
     }
+    int offset = index - 1;
+
+    if (offset < kNumStandardEasingTypes * 3) {
+        int indexIntoStandardEasingTypes = offset / 3;
+        auto easingType = kStandardEasingTypes[indexIntoStandardEasingTypes];
+        auto easingDirection = kStandardEasingDirections[offset % 3];
+        EasingFunction result(easingType, easingDirection, 0);
+        return result;
+    }
+
+    offset -= kNumStandardEasingTypes * 3;
+
+    for (int i = 0; i < kNumParametrizedEasingTypes; i++) {
+        EasingType easingType;
+        int rangeMin;
+        int rangeMax;
+        std::tie(easingType, rangeMin, rangeMax) = kParameterizedEasingTypes[i];
+        int rangeSize = rangeMax - rangeMin + 1;
+        int numFunctions = rangeSize * 3;
+        if (offset < numFunctions) {
+            int parameter = rangeMin + offset / 3;
+            auto easingDirection = kStandardEasingDirections[offset % 3];
+            EasingFunction result(easingType, easingDirection, parameter);
+            return result;
+        }
+        offset -= numFunctions;
+    }
+
+    {
+        EasingFunction result(EasingType::Linear, EasingDirection::In, 0);
+        return result;
+    }
+}
+
+double coreStep(double t) {
+    return 0.0;
 }
 
 double coreSine(double t) {
@@ -66,6 +84,45 @@ double coreCircular(double t) {
     return 1 - std::sqrt(1 - t * t);
 }
 
+struct CoreElastic {
+    int mNumCrossings = 1;
+
+    CoreElastic(int numCrossings)
+    : mNumCrossings(numCrossings) {
+        // Empty.
+    }
+
+    double operator()(double t) {
+        auto coefficient = 5.0;
+        // The first term here is a cosine wave which is calibrated have value 0 at time 0, value 1
+        // at time 1, and numCrossings zero crossings in the range (0, 1).
+
+        // The second term is exponential growth. It ends at value 1 at time 1, but it doesn't
+        // need to start at 0 as the first term does, so we don't need to make the same adjustment
+        // as in the PseudoExponential easing function.
+        return (
+            std::cos((1 - t) * 2 * std::numbers::pi * (mNumCrossings / 2.0 + 1.0 / 4))
+            * std::pow(2.0, coefficient * (t - 1))
+        );
+    }
+};
+
+struct CoreSinc {
+    int mNumCrossings = 1;
+
+    CoreSinc(int numCrossings)
+    : mNumCrossings(numCrossings) {
+        // Empty.
+    }
+
+    double operator()(double t) {
+        auto s = (1 - t) * mNumCrossings * std::numbers::pi;
+        if (s < 1e-9) {
+            return 1.0;
+        }
+        return std::sin(s) / s;
+    }
+};
 
 double easeOut(double t, std::function<double(double)> core) {
     return 1 - core(1 - t);
@@ -79,44 +136,46 @@ double easeInOut(double t, std::function<double(double)> core) {
 }
 
 double computeEasingCore(double t, EasingFunction easingFunction) {
-    if (easingFunction == EasingFunction::Linear) {
+    const auto easingType = easingFunction.mType;
+    const auto direction = easingFunction.mDirection;
+    if (easingType == EasingType::Linear) {
         return t;
     }
-    if (easingFunction == EasingFunction::FirstValue) {
-        return 0.0;
+    std::function<double(double)> core;
+    if (easingType == EasingType::Step) {
+        core = coreStep;
+    } else if (easingType == EasingType::Quadratic) {
+        core = coreQuadratic;
+    } else if (easingType == EasingType::Sine) {
+        core = coreSine;
+    } else if (easingType == EasingType::Cubic) {
+        core = coreCubic;
+    } else if (easingType == EasingType::Quartic) {
+        core = coreQuartic;
+    } else if (easingType == EasingType::Quintic) {
+        core = coreQuintic;
+    } else if (easingType == EasingType::PseudoExponential) {
+        core = corePseudoExponential;
+    } else if (easingType == EasingType::Circular) {
+        core = coreCircular;
+    } else if (easingType == EasingType::Elastic) {
+        CoreElastic elastic(easingFunction.mParameter);
+        core = elastic;
+    } else if (easingType == EasingType::Sinc) {
+        CoreSinc sinc(easingFunction.mParameter);
+        core = sinc;
     }
-    if (easingFunction == EasingFunction::NextValue) {
-        return 1.0;
+
+    if (direction == EasingDirection::In) {
+        return core(t);
+    } else if (direction == EasingDirection::Out) {
+        return 1 - core(1 - t);
+    } else if (direction == EasingDirection::InOut) {
+        if (t < 0.5) {
+            return core(2 * t) / 2;
+        }
+        return 1 - core(2 * (1 - t)) / 2;
     }
-
-    if (easingFunction == EasingFunction::QuadraticIn) { return coreQuadratic(t); }
-    if (easingFunction == EasingFunction::QuadraticOut) { return easeOut(t, coreQuadratic); }
-    if (easingFunction == EasingFunction::QuadraticInOut) { return easeInOut(t, coreQuadratic); }
-
-    if (easingFunction == EasingFunction::SineIn) { return coreSine(t); }
-    if (easingFunction == EasingFunction::SineOut) { return easeOut(t, coreSine); }
-    if (easingFunction == EasingFunction::SineInOut) { return easeInOut(t, coreSine); }
-
-    if (easingFunction == EasingFunction::CubicIn) { return coreCubic(t); }
-    if (easingFunction == EasingFunction::CubicOut) { return easeOut(t, coreCubic); }
-    if (easingFunction == EasingFunction::CubicInOut) { return easeInOut(t, coreCubic); }
-
-    if (easingFunction == EasingFunction::QuarticIn) { return coreQuartic(t); }
-    if (easingFunction == EasingFunction::QuarticOut) { return easeOut(t, coreQuartic); }
-    if (easingFunction == EasingFunction::QuarticInOut) { return easeInOut(t, coreQuartic); }
-
-    if (easingFunction == EasingFunction::QuinticIn) { return coreQuintic(t); }
-    if (easingFunction == EasingFunction::QuinticOut) { return easeOut(t, coreQuintic); }
-    if (easingFunction == EasingFunction::QuinticInOut) { return easeInOut(t, coreQuintic); }
-
-    if (easingFunction == EasingFunction::PseudoExponentialIn) { return corePseudoExponential(t); }
-    if (easingFunction == EasingFunction::PseudoExponentialOut) { return easeOut(t, corePseudoExponential); }
-    if (easingFunction == EasingFunction::PseudoExponentialInOut) { return easeInOut(t, corePseudoExponential); }
-
-    if (easingFunction == EasingFunction::CircularIn) { return coreCircular(t); }
-    if (easingFunction == EasingFunction::CircularOut) { return easeOut(t, coreCircular); }
-    if (easingFunction == EasingFunction::CircularInOut) { return easeInOut(t, coreCircular); }
-
     return t;
 }
 

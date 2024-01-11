@@ -3,7 +3,9 @@
 
 #include "automation_core.hpp"
 
-using Easing = automation::EasingFunction;
+using EasingFunction = automation::EasingFunction;
+using EasingType = automation::EasingType;
+using EasingDirection = automation::EasingDirection;
 using Automation = automation::Automation;
 
 const double kEpsilon = 1e-9;
@@ -13,7 +15,9 @@ TEST_CASE("single segment")
     int numValues = 2;
     double values[] = {1.0, 2.0};
     double durations[] = {2.0};
-    Easing easingFunctions[] = {Easing::Linear, Easing::Linear};
+    EasingFunction easingFunctions[] = {
+        { EasingType::Linear, EasingDirection::In, 0 },
+    };
     Automation automation = {
         .numValues = numValues,
         .values = values,
@@ -34,7 +38,10 @@ TEST_CASE("multiple segments")
     int numValues = 3;
     double values[] = {1.0, 5.0, -3.0};
     double durations[] = {2.0, 1.0};
-    Easing easingFunctions[] = {Easing::Linear, Easing::Linear};
+    EasingFunction easingFunctions[] = {
+        { EasingType::Linear, EasingDirection::In, 0 },
+        { EasingType::Linear, EasingDirection::In, 0 },
+    };
     Automation automation = {
         .numValues = numValues,
         .values = values,
@@ -49,12 +56,15 @@ TEST_CASE("multiple segments")
     REQUIRE_THAT(automation::evaluate(&automation, 4.0), Catch::Matchers::WithinRel(-3.0, kEpsilon));
 }
 
-TEST_CASE("normalization")
+TEST_CASE("NORMALIZATION")
 {
     int numValues = 3;
     double values[] = {1.0, 2.0, 1.0};
     double durations[] = {2.0, 3.0};
-    Easing easingFunctions[] = {Easing::Linear, Easing::Linear};
+    EasingFunction easingFunctions[] = {
+        { EasingType::Linear, EasingDirection::In, 0 },
+        { EasingType::Linear, EasingDirection::In, 0 },
+    };
     Automation automation = {
         .numValues = numValues,
         .values = values,
@@ -64,4 +74,12 @@ TEST_CASE("normalization")
     normalizeDurations(&automation);
     REQUIRE_THAT(automation.durations[0], Catch::Matchers::WithinRel(2.0 / 5.0, kEpsilon));
     REQUIRE_THAT(automation.durations[1], Catch::Matchers::WithinRel(3.0 / 5.0, kEpsilon));
+}
+
+TEST_CASE("enumeration")
+{
+    auto easingFunction = automation::easingFunctionFromInt(25);
+    REQUIRE(easingFunction.mType == EasingType::Elastic);
+    REQUIRE(easingFunction.mDirection == EasingDirection::In);
+    REQUIRE(easingFunction.mParameter == 1);
 }

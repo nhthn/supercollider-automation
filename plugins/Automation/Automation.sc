@@ -1,30 +1,39 @@
 Automation : UGen {
-	classvar <>easingFunctions = #[
-		\linear,
-		\firstValue,
-		\nextValue,
-		\quadraticIn,
-		\quadraticOut,
-		\quadraticInOut,
-		\cubicIn,
-		\cubicOut,
-		\cubicInOut,
-		\sineIn,
-		\sineOut,
-		\sineInOut,
-		\quarticIn,
-		\quarticOut,
-		\quarticInOut,
-		\quinticIn,
-		\quinticOut,
-		\quinticInOut,
-		\pseudoExponentialIn,
-		\pseudoExponentialOut,
-		\pseudoExponentialInOut,
-		\circularIn,
-		\circularOut,
-		\circularInOut,
-	];
+	*easingFunctions {
+		var result;
+		result = [\linear];
+		[
+			\step,
+			\quadratic,
+			\sine,
+			\cubic,
+			\quartic,
+			\quintic,
+			\pseudoExponential,
+			\circular
+		].do { |prefix|
+			result = result ++ [
+				(prefix.asString ++ "In").asSymbol,
+				(prefix.asString ++ "Out").asSymbol,
+				(prefix.asString ++ "InOut").asSymbol,
+			];
+		};
+		[
+			[\elastic, (1..8)],
+			[\sinc, (1..8)],
+		].do { |spec|
+			var prefix, parameters;
+			# prefix, parameters = spec;
+			parameters.do { |parameter|
+				result = result ++ [
+					(prefix.asString ++ parameter.asString ++ "In").asSymbol,
+					(prefix.asString ++ parameter.asString ++ "Out").asSymbol,
+					(prefix.asString ++ parameter.asString ++ "InOut").asSymbol,
+				];
+			}
+		};
+		^result;
+	}
 
 	*ar { |time, values, durations, easingFunctions|
 		var args;
