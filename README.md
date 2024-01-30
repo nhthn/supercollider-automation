@@ -1,5 +1,7 @@
 # Automation
 
+A SuperCollider UGen for piecewise functions defined with a series of breakpoints. It is an alternative to IEnvGen that allows all parameters to be modulated at audio rate.
+
 ### Requirements
 
 - CMake >= 3.12

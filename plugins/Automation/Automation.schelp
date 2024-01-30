@@ -1,7 +1,6 @@
 class:: Automation
 summary:: a multi-segment easing function
 categories:: UGens>Envelopes
-related:: UGens>Envelopes>IEnvGen
 
 description::
 
