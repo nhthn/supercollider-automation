@@ -1,21 +1,57 @@
 class:: Automation
-summary:: A simple audio volume gain plugin
-related:: TODO
-categories:: UGens>TODO
+summary:: a multi-segment easing function
+categories:: UGens>Envelopes
+related:: UGens>IEnvGen
 
 description::
 
-A simple audio volume gain plugin
+Automation is a UGen for evaluating a piecewise function defined by a number of breakpoints and easing functions to transition between those breakpoints. It takes as input N + 1 values, N segment durations, and N "easing functions" (linear, stepped, curved, etc), and a single "time" parameter that controls at which point the function is evaluated.
 
+The intended application of Automation is to permit the parametric definition of complex oscillator waveforms with modulated breakpoints. As such, the segment durations are normalized so that the first segment starts at 0 and the last segment ends at 1. If "time" is outside the range [0, 1], Automation simply extends the first or last input value.
+
+It is similar to IEnvGen but improves on the latter in two ways: all parameters can be modulated at audio rate, and provides a set of easing functions much more extensive than Env's default curve parameters. Automation is completely stateless and the current sample of output only depends instantaneously on the current samples of its inputs.
+
+section:: Easing functions
+
+Most easing functions have three different modes: "in," "out," and "in-out." These names comes from computer graphics. For most smoothly curved easing functions, "in" means that the easing function begins slow and ends fast, "out" means that it begins fast and ends slow, and "in-out" begins and ends slow with an inflection point halfway in between. There are specified via a suffix, such as "quadraticInOut." For "linear," the modes are identical and therefore redundant, so the lone linear easing function is simply called "linear", for all others, the names are in lower camel case.
+
+To get the full list of easing functions with suffixes, run code:: Automation.easingFunctions ::. 
+
+list::
+## code:: linear :: : linear interpolation. Again, this one doesn't have any In/Out/InOut suffix, but all others do.
+## code:: step :: : code:: stepIn :: holds the first value, code:: stepOut :: holds the second value, code:: stepInOut :: switches between the first and second values at the halfway point.
+## code:: quadratic, cubic, quartic, quintic :: : derived from power functions.
+## code:: sine :: : one quarter of cosine wave.
+## code:: pseudoExponential :: : A shifted and scaled segment of an exponential function.
+## code:: circular :: : one quarter of a circle.
+## code:: elastic1-elastic8 :: : the trajectory of the damped simple harmonic oscillator. There are 8 of these; the number is the number of crossings. Note that the "out" versions (e.g. elastic8Out) are most physically salient as the oscillations decay, whereas in the "in" versions the oscillations grow.
+## code:: sinc1-sinc8 :: : a sinc function with a specified number of crossings.
+## code:: staircase2-staircase8 :: : equivalent of "linear" but with sample-and-hold. (There is no code:: staircase1 :: because that's just code:: step ::.)
+::
+
+Note the absence of a true exponential easing function like the code:: \exp :: curve type in SC's Env. There are specific reasons for this. First, this curve type is not really used for its "curve" but rather to enable linear-ish interpolation in an exponential domain, such as frequencies; it's generally more desirable to compute the envelope in the exponential domain and convert afterwards (e.g. midicps). Second, the exponential curve behaves very different from all other easing functions, as it is not invariant to addition, and it is a frequent source of mistakes when trying to transition exponentially between values of different signs.
 
 classmethods::
 
-method::ar, kr
+method::ar
 
-argument::TODO
+All parameters are internally audio rate. Any control-rate parameters will be automatically upsampled to audio rate using K2A, which performs linear interpolation (with the exception of the easing functions, where a sample-and-hold is performed).
 
-argument::TODO
+argument::time
 
+The time at which the function is evaluated. Nominally this will range from 0 (beginning of first segment) to 1 (end of last segment). If this is less than 0, then the first value is produced, and if it is greater than 1, the last value is produced.
+
+argument::values
+
+An array of size at least 2 specifying the output values of the function at its breakpoints.
+
+argument::durations
+
+An array of size exactly one less than values, specifying the spacing of the breakpoints. The durations are internally normalized so their sum is 1. If the durations have sum 0, then no normalization takes place; Automation tries to avoid outputting NaNs or infinities unless explicitly entered in the inputs.
+
+argument::easingFunctions
+
+An array of size exactly one less than values, specifying the easing functions between the breakpoints.
 
 examples::
 
