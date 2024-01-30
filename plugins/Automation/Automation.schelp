@@ -1,7 +1,7 @@
 class:: Automation
 summary:: a multi-segment easing function
 categories:: UGens>Envelopes
-related:: UGens>IEnvGen
+related:: UGens>Envelopes>IEnvGen
 
 description::
 
@@ -13,9 +13,9 @@ It is similar to IEnvGen but improves on the latter in two ways: all parameters 
 
 section:: Easing functions
 
-Most easing functions have three different modes: "in," "out," and "in-out." These names comes from computer graphics. For most smoothly curved easing functions, "in" means that the easing function begins slow and ends fast, "out" means that it begins fast and ends slow, and "in-out" begins and ends slow with an inflection point halfway in between. There are specified via a suffix, such as "quadraticInOut." For "linear," the modes are identical and therefore redundant, so the lone linear easing function is simply called "linear", for all others, the names are in lower camel case.
+Most easing functions have three different modes: "in," "out," and "in-out." These names come from computer graphics and follow the same conventions as computer graphics (see for example easings.net). For most smoothly curved easing functions, "in" means that the easing function begins slow and ends fast, "out" means that it begins fast and ends slow, and "in-out" begins and ends slow with an inflection point halfway in between. For "linear," the three modes are identical and therefore redundant, so the lone linear easing function is simply called "linear", for all others, the names are in lower camel case with the mode as a suffix: quadraticIn, quadraticOut, quadraticInOut.
 
-To get the full list of easing functions with suffixes, run code:: Automation.easingFunctions ::. 
+To get the full list of easing functions with suffixes, run code:: Automation.easingFunctions ::. The list is as follows:
 
 list::
 ## code:: linear :: : linear interpolation. Again, this one doesn't have any In/Out/InOut suffix, but all others do.
@@ -29,13 +29,17 @@ list::
 ## code:: staircase2-staircase8 :: : equivalent of "linear" but with sample-and-hold. (There is no code:: staircase1 :: because that's just code:: step ::.)
 ::
 
-Note the absence of a true exponential easing function like the code:: \exp :: curve type in SC's Env. There are specific reasons for this. First, this curve type is not really used for its "curve" but rather to enable linear-ish interpolation in an exponential domain, such as frequencies; it's generally more desirable to compute the envelope in the exponential domain and convert afterwards (e.g. midicps). Second, the exponential curve behaves very different from all other easing functions, as it is not invariant to addition, and it is a frequent source of mistakes when trying to transition exponentially between values of different signs.
+Note the absence of a true exponential easing function like the code:: \exp :: curve type in SC's Env. There are specific reasons for this. First, this curve type is not actually used as a "curve" but rather to enable linear-ish interpolation in an exponential domain, such as between frequencies expressed in Hertz; it's generally more desirable to compute the envelope in the exponential domain and convert afterwards (e.g. midicps). Second, the exponential curve behaves differently from all other easing functions, as it is not invariant to a constant offset and the two values must be nonzero and have the same sign. When the two values are NOT the same sign, NaNs or infinities may be generated, and for this reason code:: \exp :: is a common source of errors.
+
+In part due to the lack of code:: \exp ::, Automation is guaranteed invariant to any linear function on its values. That is, any function of the form code:: y = mx + b :: applied on all inputs in the code:: values :: array is equivalent to applying that function on the output of the UGen itself.
 
 classmethods::
 
 method::ar
 
 All parameters are internally audio rate. Any control-rate parameters will be automatically upsampled to audio rate using K2A, which performs linear interpolation (with the exception of the easing functions, where a sample-and-hold is performed).
+
+An error is thrown if the array inputs code:: values ::, code:: durations ::, and code:: easingFunctions :: are not arrays or are not consistent in size.
 
 argument::time
 
@@ -51,12 +55,18 @@ An array of size exactly one less than values, specifying the spacing of the bre
 
 argument::easingFunctions
 
-An array of size exactly one less than values, specifying the easing functions between the breakpoints.
+An array of size exactly one less than values, specifying the easing functions between the breakpoints. Easing functions may be specified as symbols, which are internally converted to numeric values by looking them up in code:: Automation.easingFunctions :: . Unrecognized symbols throw an error.
 
 examples::
 
 code::
 
-{ Automation.ar(/* TODO */) }.play
+(
+var duration;
+duration = 0.05;
+{
+    Automation.ar(Sweep.ar / duration, [0, 1, 0.5, 0], [1.0, 2.0, 1.0], [\linear, \quadraticOut, \elastic7Out]);
+}.plot(duration);
+)
 
 ::

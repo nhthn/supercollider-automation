@@ -60,7 +60,10 @@ Automation : UGen {
 	*wrapEasingFunction { |thing|
 		var result;
 		result = thing;
-		if(thing.isKindOf(Symbol)) {
+		if(result.isKindOf(Symbol)) {
+			if(this.easingFunctions.includes(result)) {
+				Error("Unrecognized easing function: %".format(thing.asString)).throw;
+			};
 			result = this.easingFunctions.indexOf(result);
 		}
 		^this.ensureAudioRate(result);
