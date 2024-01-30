@@ -59,12 +59,12 @@ const std::tuple<EasingType, int, int> kParameterizedEasingTypes[kNumParametrize
 
 struct Automation {
     int numValues;
-    double* values;
-    double* durations;
+    float* values;
+    float* durations;
     EasingFunction* easingFunctions;
 };
 
-double evaluate(const Automation* automation, double time);
+float evaluate(const Automation* automation, float time);
 void normalizeDurations(Automation* automation);
 EasingFunction easingFunctionFromInt(int index);
 

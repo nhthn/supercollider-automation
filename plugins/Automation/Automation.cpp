@@ -15,8 +15,8 @@ Automation::Automation() {
     int numSegments = numValues - 1;
 
     auto coreMemory = RTAlloc(mWorld, sizeof(Automation));
-    auto valuesMemory = RTAlloc(mWorld, numValues * sizeof(double));
-    auto durationsMemory = RTAlloc(mWorld, numSegments * sizeof(double));
+    auto valuesMemory = RTAlloc(mWorld, numValues * sizeof(float));
+    auto durationsMemory = RTAlloc(mWorld, numSegments * sizeof(float));
     auto easingFunctionMemory = RTAlloc(mWorld, numSegments * sizeof(automation::EasingFunction));
 
     if (
@@ -34,8 +34,8 @@ Automation::Automation() {
 
     mCore = static_cast<AutomationCore*>(coreMemory);
     mCore->numValues = numValues;
-    mCore->values = static_cast<double*>(valuesMemory);
-    mCore->durations = static_cast<double*>(durationsMemory);
+    mCore->values = static_cast<float*>(valuesMemory);
+    mCore->durations = static_cast<float*>(durationsMemory);
     mCore->easingFunctions = static_cast<automation::EasingFunction*>(easingFunctionMemory);
 
     mCalcFunc = make_calc_function<Automation, &Automation::next>();

@@ -7,6 +7,8 @@
 
 namespace automation {
 
+static constexpr float kPi = static_cast<float>(std::numbers::pi);
+
 EasingFunction::EasingFunction(EasingType type, EasingDirection direction, int parameter)
     : mType(type), mDirection(direction), mParameter(parameter)
 {
@@ -51,37 +53,37 @@ EasingFunction easingFunctionFromInt(int index) {
     }
 }
 
-double coreStep(double t) {
+float coreStep(float t) {
     return 0.0;
 }
 
-double coreSine(double t) {
-    return 1 - std::cos(t * std::numbers::pi / 2);
+float coreSine(float t) {
+    return 1.0f - std::cosf(t * kPi / 2.0f);
 }
 
-double coreQuadratic(double t) {
+float coreQuadratic(float t) {
     return t * t;
 }
 
-double coreCubic(double t) {
+float coreCubic(float t) {
     return t * t * t;
 }
 
-double coreQuartic(double t) {
+float coreQuartic(float t) {
     return t * t * t * t;
 }
 
-double coreQuintic(double t) {
+float coreQuintic(float t) {
     return t * t * t * t * t;
 }
 
-double corePseudoExponential(double t) {
-    auto coefficient = 10.0;
-    return (std::pow(2.0, coefficient * t) - 1.0) / (std::pow(2.0, coefficient) - 1.0);
+float corePseudoExponential(float t) {
+    float coefficient = 10.0f;
+    return (std::powf(2.0f, coefficient * t) - 1.0f) / (std::powf(2.0f, coefficient) - 1.0f);
 }
 
-double coreCircular(double t) {
-    return 1 - std::sqrt(1 - t * t);
+float coreCircular(float t) {
+    return 1 - std::sqrtf(1 - t * t);
 }
 
 struct CoreElastic {
@@ -92,8 +94,8 @@ struct CoreElastic {
         // Empty.
     }
 
-    double operator()(double t) {
-        auto coefficient = 5.0;
+    float operator()(float t) {
+        float coefficient = 5.0;
         // The first term here is a cosine wave which is calibrated have value 0 at time 0, value 1
         // at time 1, and numCrossings zero crossings in the range (0, 1).
 
@@ -101,8 +103,8 @@ struct CoreElastic {
         // need to start at 0 as the first term does, so we don't need to make the same adjustment
         // as in the PseudoExponential easing function.
         return (
-            std::cos((1 - t) * 2 * std::numbers::pi * (mNumCrossings / 2.0 + 1.0 / 4))
-            * std::pow(2.0, coefficient * (t - 1))
+            std::cosf((1.0f - t) * 2.0f * kPi * (mNumCrossings / 2.0f + 1.0f / 4))
+            * std::powf(2.0f, coefficient * (t - 1.0f))
         );
     }
 };
@@ -115,8 +117,8 @@ struct CoreSinc {
         // Empty.
     }
 
-    double operator()(double t) {
-        auto s = (1 - t) * mNumCrossings * std::numbers::pi;
+    float operator()(float t) {
+        auto s = (1 - t) * mNumCrossings * kPi;
         if (s < 1e-9) {
             return 1.0;
         }
@@ -132,29 +134,29 @@ struct CoreStaircase {
         // Empty.
     }
 
-    double operator()(double t) {
+    float operator()(float t) {
         return std::floor(t * mNumSteps) / mNumSteps;
     }
 };
 
-double easeOut(double t, std::function<double(double)> core) {
+float easeOut(float t, std::function<float(float)> core) {
     return 1 - core(1 - t);
 }
 
-double easeInOut(double t, std::function<double(double)> core) {
+float easeInOut(float t, std::function<float(float)> core) {
     if (t < 0.5) {
         return core(2 * t) / 2;
     }
     return 1 - core(2 * (1 - t)) / 2;
 }
 
-double computeEasingCore(double t, EasingFunction easingFunction) {
+float computeEasingCore(float t, EasingFunction easingFunction) {
     const auto easingType = easingFunction.mType;
     const auto direction = easingFunction.mDirection;
     if (easingType == EasingType::Linear) {
         return t;
     }
-    std::function<double(double)> core;
+    std::function<float(float)> core;
     if (easingType == EasingType::Step) {
         core = coreStep;
     } else if (easingType == EasingType::Quadratic) {
@@ -195,12 +197,12 @@ double computeEasingCore(double t, EasingFunction easingFunction) {
     return t;
 }
 
-double computeEasing(double x1, double x2, double t, EasingFunction easingFunction) {
+float computeEasing(float x1, float x2, float t, EasingFunction easingFunction) {
     auto tWarped = computeEasingCore(t, easingFunction);
     return x1 + (x2 - x1) * tWarped;
 }
 
-double evaluate(const Automation* automation, double time)
+float evaluate(const Automation* automation, float time)
 {
     const int numValues = automation->numValues;
     const int numDurations = numValues - 1;
@@ -208,7 +210,7 @@ double evaluate(const Automation* automation, double time)
         return automation->values[0];
     }
 
-    double cumulativeTime = 0.0;
+    float cumulativeTime = 0.0;
     for (int i = 0; i < numDurations; i++) {
         const auto duration = automation->durations[i];
         const auto newCumulativeTime = cumulativeTime + duration;
@@ -228,12 +230,12 @@ double evaluate(const Automation* automation, double time)
 void normalizeDurations(Automation* automation)
 {
     const int numDurations = automation->numValues - 1;
-    double sum = 0.0;
+    float sum = 0.0;
     for (int i = 0; i < numDurations; i++) {
-        automation->durations[i] = std::max(automation->durations[i], 0.0);
+        automation->durations[i] = std::max(automation->durations[i], 0.0f);
         sum += automation->durations[i];
     }
-    double multiplier = sum == 0.0 ? 1.0 : 1.0 / sum;
+    float multiplier = sum == 0.0 ? 1.0f : 1.0f / sum;
     for (int i = 0; i < numDurations; i++) {
         automation->durations[i] *= multiplier;
     }
