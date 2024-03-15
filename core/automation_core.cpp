@@ -139,6 +139,58 @@ struct CoreStaircase {
     }
 };
 
+struct CoreBounce {
+    int mNumBounces = 1;
+    const float mK = 0.6;
+
+    CoreBounce(int numBounces)
+    : mNumBounces(numBounces) {
+        // Empty.
+    }
+
+    float operator()(float t) {
+        /*
+        Each bounce is an object in uniform acceleration. If an object is launched from the floor
+        with initial velocity v, the time it takes to return to the floor is proportional to v. Upon
+        inelastic collision with the floor, the speed is multiplied by a coefficient of restitution
+        k. The height of the bounce is multiplied by k^2.
+        
+        For simplicity, assume acceleration and initial velocity are both 1. The duration of the
+        nth bounce (0-indexed) is k^n, and the duration of the first n bounces is
+
+            t = 1 + k + k^2 + k^3 + ... + k^n = (1 - k^(n + 1)) / (1 - k)
+
+        To determine which bounce n we're on given t, we invert the formula to solve for n:
+
+            n = floor(log_k(1 - t (1 - k)) - 1)
+        
+        This gives us the index of the current segment. We then run this integer n back into the
+        first equation to get the formula for the start time t0 of the current segment.
+
+        The time since the current segment is t - t0. We convert this time to a ramp that starts at
+        0 at t0 and ends at 1 at the end of the segment. Since the segment has duration k^n, this
+        ramp value (which I call normalizedTimeSinceBounceStart) is w = (t - t0) / k^n.
+
+        To convert this time into a parabola going from 0 to 1 to 0, we write 1 - (2w - 1)^2. This
+        is multiplied by (k^2)^n to get the final position.
+
+        Before all this, we also have to make sure that the ball starts at the peak of segment 0,
+        and ends at the end of segment n. To do so we compute the durations of the sum of the first
+        n segments and subtract 1/2 the duration of the first segment.
+        */
+        int numSegments = mNumBounces + 1;
+        float totalDuration = (1.0f - std::powf(mK, numSegments)) / (1.0f - mK) - 0.5f;
+        float tNormalized = t * totalDuration * 0.5f;
+        int segmentNumber = std::logf(1 - tNormalized * (1 - mK)) / std::logf(mK);
+        float segmentStartTime = (1 - std::powf(mK, segmentNumber)) / (1 - mK);
+        float segmentDuration = std::powf(mK, segmentNumber);
+        float normalizedTimeSinceBounceStart = (tNormalized - segmentStartTime) / segmentDuration;
+        float temp = 2.0f * normalizedTimeSinceBounceStart - 1.0f;
+        float result = (1 - temp * temp) * std::powf(mK * mK, segmentNumber);
+        return result;
+    }
+};
+
 float easeOut(float t, std::function<float(float)> core) {
     return 1 - core(1 - t);
 }
