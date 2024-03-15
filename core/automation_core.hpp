@@ -21,6 +21,7 @@ enum class EasingType {
     Elastic,
     Sinc,
     Staircase,
+    Bounce,
 };
 
 class EasingFunction {
@@ -50,11 +51,12 @@ const EasingType kStandardEasingTypes[kNumStandardEasingTypes] = {
     EasingType::Circular,
 };
 
-constexpr int kNumParametrizedEasingTypes = 3;
+constexpr int kNumParametrizedEasingTypes = 4;
 const std::tuple<EasingType, int, int> kParameterizedEasingTypes[kNumParametrizedEasingTypes] = {
     { EasingType::Elastic, 1, 8 },
     { EasingType::Sinc, 1, 8 },
-    { EasingType::Staircase, 2, 8 }
+    { EasingType::Staircase, 2, 8 },
+    { EasingType::Bounce, 1, 8 }
 };
 
 struct Automation {

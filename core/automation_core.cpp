@@ -180,7 +180,7 @@ struct CoreBounce {
         */
         int numSegments = mNumBounces + 1;
         float totalDuration = (1.0f - std::powf(mK, numSegments)) / (1.0f - mK) - 0.5f;
-        float tNormalized = t * totalDuration * 0.5f;
+        float tNormalized = t * totalDuration + 0.5f;
         int segmentNumber = std::logf(1 - tNormalized * (1 - mK)) / std::logf(mK);
         float segmentStartTime = (1 - std::powf(mK, segmentNumber)) / (1 - mK);
         float segmentDuration = std::powf(mK, segmentNumber);
@@ -233,6 +233,9 @@ float computeEasingCore(float t, EasingFunction easingFunction) {
         core = function;
     } else if (easingType == EasingType::Staircase) {
         CoreStaircase function(easingFunction.mParameter);
+        core = function;
+    } else if (easingType == EasingType::Bounce) {
+        CoreBounce function(easingFunction.mParameter);
         core = function;
     }
 
