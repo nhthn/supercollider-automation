@@ -49,10 +49,10 @@ Automation : UGen {
 			Error("easingFunctions must be one less in size than values").throw;
 		};
 		args = (
-			[this.ensureAudioRate(time)]
+			[this.ensureAudioRateLinearInterp(time)]
 			++ [values.size]
-			++ values.collect { |value| this.ensureAudioRate(value) }
-			++ durations.collect { |duration| this.ensureAudioRate(duration) }
+			++ values.collect { |value| this.ensureAudioRateLinearInterp(value) }
+			++ durations.collect { |duration| this.ensureAudioRateLinearInterp(duration) }
 			++ easingFunctions.collect { |easingFunction| this.wrapEasingFunction(easingFunction) }
 		);
 		^this.multiNew(\audio, *args);
@@ -67,13 +67,20 @@ Automation : UGen {
 			};
 			result = this.easingFunctions.indexOf(result);
 		}
-		^this.ensureAudioRate(result);
+		^this.ensureAudioRateNoInterp(result);
 	}
 
-	*ensureAudioRate { |thing|
+	*ensureAudioRateLinearInterp { |thing|
 		if(thing.rate == \audio) {
 			^thing;
 		};
 		^K2A.ar(thing);
+	}
+
+	*ensureAudioRateNoInterp { |thing|
+		if(thing.rate == \audio) {
+			^thing;
+		};
+		^K2A.ar(Latch.ar(thing, Impulse.ar(ControlRate.ir)));
 	}
 }
